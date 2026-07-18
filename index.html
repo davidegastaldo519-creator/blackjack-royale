@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blackjack Royale — Tavolo Multiplayer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="t-style-1">
+
+  <!-- ================= SCHERMATA DI INGRESSO ================= -->
+  <div id="joinOverlay" class="overlay">
+    <div class="join-card">
+      <h1 class="brand">Blackjack <span>Royale</span></h1>
+      <p class="join-sub">Tavolo privato · fino a 5 giocatori · fiches virtuali</p>
+      <label class="field-label" for="nameInput">Il tuo nome al tavolo</label>
+      <input id="nameInput" maxlength="16" placeholder="Es. Davide" autocomplete="off">
+      <label class="field-label">Scegli il dorso delle tue carte</label>
+      <div id="joinBacks" class="backs-grid"></div>
+      <button id="joinBtn" class="btn-gold">Siediti al tavolo</button>
+      <p id="joinError" class="join-error"></p>
+    </div>
+  </div>
+
+  <!-- ================= BARRA SUPERIORE ================= -->
+  <header class="topbar">
+    <div class="brand-small">♠ Blackjack <span>Royale</span></div>
+    <div class="room-box">
+      <span class="room-label">Stanza</span>
+      <span id="roomCode" class="room-code">—</span>
+      <button id="copyLink" class="btn-ghost" title="Copia il link della stanza">Copia link invito</button>
+    </div>
+    <div class="top-actions">
+      <button id="openTableStyles" class="btn-ghost host-only" hidden>Stile tavolo</button>
+      <button id="openCardStyles" class="btn-ghost">Le mie carte</button>
+    </div>
+  </header>
+
+  <!-- ================= PANNELLO SALDI (LEDGER) ================= -->
+  <aside class="ledger">
+    <div class="ledger-title">Registro fiches</div>
+    <div id="ledgerRows"></div>
+    <div class="ledger-bonus">
+      <div class="bonus-label">Prossima ricarica <b>+150.000</b></div>
+      <div id="bonusTimer" class="bonus-timer">--:--</div>
+      <div class="bonus-bar"><div id="bonusBarFill"></div></div>
+    </div>
+  </aside>
+
+  <!-- ================= SCENA DEL TAVOLO ================= -->
+  <main class="scene">
+    <div class="table">
+      <!-- Tavolo disegnato in SVG con texture procedurali (legno + feltro) -->
+      <svg class="table-svg" viewBox="0 0 1200 660" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="woodG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#a06a38"/>
+            <stop offset=".42" stop-color="#6e4322"/>
+            <stop offset="1" stop-color="#351d0e"/>
+          </linearGradient>
+          <radialGradient id="feltG" cx="50%" cy="26%" r="90%">
+            <stop offset="0" class="fs1"/>
+            <stop offset="1" class="fs2"/>
+          </radialGradient>
+          <radialGradient id="lampG" cx="50%" cy="0%" r="75%">
+            <stop offset="0" stop-color="rgba(255,243,210,.30)"/>
+            <stop offset="1" stop-color="rgba(255,255,255,0)"/>
+          </radialGradient>
+          <filter id="woodTex" x="-5%" y="-5%" width="110%" height="110%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.004 0.085" numOctaves="5" seed="7" result="n"/>
+            <feDiffuseLighting in="n" lighting-color="#e6b87e" surfaceScale="1.5" result="l">
+              <feDistantLight azimuth="110" elevation="58"/>
+            </feDiffuseLighting>
+            <feComposite in="l" in2="SourceGraphic" operator="in" result="lw"/>
+            <feBlend in="SourceGraphic" in2="lw" mode="multiply"/>
+          </filter>
+          <filter id="feltTex" x="-5%" y="-5%" width="110%" height="110%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="n"/>
+            <feColorMatrix in="n" type="luminanceToAlpha" result="a"/>
+            <feFlood flood-color="#000000" flood-opacity="0.45" result="f"/>
+            <feComposite in="f" in2="a" operator="in" result="g"/>
+            <feBlend in="SourceGraphic" in2="g" mode="normal"/>
+          </filter>
+          <filter id="softBlur"><feGaussianBlur stdDeviation="14"/></filter>
+          <path id="arcText" d="M 175 298 Q 600 498 1025 298" fill="none"/>
+        </defs>
+
+        <ellipse cx="600" cy="624" rx="520" ry="28" fill="#000" opacity=".55" filter="url(#softBlur)"/>
+
+        <path filter="url(#woodTex)" fill="url(#woodG)"
+          d="M 60 18 L 1140 18 Q 1186 18 1186 64 L 1186 210 A 586 420 0 0 1 14 210 L 14 64 Q 14 18 60 18 Z"/>
+        <path class="brass-line" d="M 66 34 L 1134 34 Q 1170 34 1170 70 L 1170 208 A 570 402 0 0 1 30 208 L 30 70 Q 30 34 66 34 Z"/>
+        <path class="brass-line thin" d="M 71 41 L 1129 41 Q 1163 41 1163 75 L 1163 206 A 563 395 0 0 1 37 206 L 37 75 Q 37 41 71 41 Z"/>
+
+        <path filter="url(#feltTex)" fill="url(#feltG)"
+          d="M 84 52 L 1116 52 Q 1150 52 1150 86 L 1150 204 A 550 380 0 0 1 50 204 L 50 86 Q 50 52 84 52 Z"/>
+        <path fill="url(#lampG)"
+          d="M 84 52 L 1116 52 Q 1150 52 1150 86 L 1150 204 A 550 380 0 0 1 50 204 L 50 86 Q 50 52 84 52 Z"/>
+
+        <path class="deco-line" d="M 145 272 Q 600 492 1055 272"/>
+        <path class="deco-line thin" d="M 162 348 Q 600 548 1038 348"/>
+        <text class="deco-text">
+          <textPath href="#arcText" startOffset="50%" text-anchor="middle">BLACKJACK PAGA 3 A 2 &#183; IL BANCO STA SU 17</textPath>
+        </text>
+      </svg>
+
+      <!-- Croupier a proporzioni reali (mezzo busto dietro al tavolo) -->
+      <div class="dealer-zone">
+        <div id="dealerAvatar" class="dealer-avatar" data-mood="idle">
+          <svg viewBox="0 0 300 252" aria-hidden="true">
+            <defs>
+              <radialGradient id="skinG" cx="42%" cy="34%" r="80%">
+                <stop offset="0" stop-color="#f2cfa6"/><stop offset=".7" stop-color="#dfb184"/><stop offset="1" stop-color="#c2915f"/>
+              </radialGradient>
+              <linearGradient id="sleeveG" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cfc9bb"/>
+              </linearGradient>
+              <linearGradient id="vestG" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#2b2b33"/><stop offset="1" stop-color="#101015"/>
+              </linearGradient>
+              <linearGradient id="hairG" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#3a2d24"/><stop offset="1" stop-color="#1d1510"/>
+              </linearGradient>
+            </defs>
+
+            <!-- braccio sinistro (camicia bianca) -->
+            <g class="cr-arm cr-arm-l">
+              <path d="M 104 152 C 80 168 68 196 70 230 L 98 236 C 97 206 106 184 120 170 Z" fill="url(#sleeveG)" stroke="#b8b2a4" stroke-width="1"/>
+              <ellipse cx="84" cy="238" rx="15" ry="10" fill="url(#skinG)"/>
+            </g>
+            <!-- braccio destro (tiene la carta quando distribuisce) -->
+            <g class="cr-arm cr-arm-r">
+              <path d="M 196 152 C 220 168 232 196 230 230 L 202 236 C 203 206 194 184 180 170 Z" fill="url(#sleeveG)" stroke="#b8b2a4" stroke-width="1"/>
+              <ellipse cx="216" cy="238" rx="15" ry="10" fill="url(#skinG)"/>
+              <rect class="held-card" x="206" y="226" width="20" height="28" rx="2.5" fill="#fdfcf7" stroke="#c9a24b" stroke-width="1.2"/>
+            </g>
+
+            <!-- torso: camicia, gilet, colletto, papillon -->
+            <path d="M 106 156 C 118 140 133 132 150 132 C 167 132 182 140 194 156 L 206 252 L 94 252 Z" fill="url(#sleeveG)"/>
+            <path d="M 112 158 C 124 144 136 138 150 138 C 164 138 176 144 188 158 L 198 252 L 102 252 Z" fill="url(#vestG)"/>
+            <path d="M 150 140 L 130 252 L 170 252 Z" fill="#f6f2e6"/>
+            <path d="M 150 140 L 128 150 L 141 186 L 150 146 Z" fill="#0d0d12"/>
+            <path d="M 150 140 L 172 150 L 159 186 L 150 146 Z" fill="#0d0d12"/>
+            <circle cx="150" cy="206" r="2.4" fill="#c9a24b"/>
+            <circle cx="150" cy="224" r="2.4" fill="#c9a24b"/>
+            <circle cx="150" cy="242" r="2.4" fill="#c9a24b"/>
+            <!-- colletto -->
+            <path d="M 138 128 L 150 142 L 128 146 Z" fill="#ffffff"/>
+            <path d="M 162 128 L 150 142 L 172 146 Z" fill="#ffffff"/>
+            <!-- papillon -->
+            <path d="M 150 140 L 133 131 Q 129 140 133 149 Z" fill="#7e1c29"/>
+            <path d="M 150 140 L 167 131 Q 171 140 167 149 Z" fill="#7e1c29"/>
+            <rect x="145" y="134.5" width="10" height="11" rx="3" fill="#5c121d"/>
+
+            <!-- collo e testa -->
+            <path d="M 138 102 L 162 102 L 160 132 Q 150 138 140 132 Z" fill="url(#skinG)"/>
+            <path d="M 138 104 Q 150 116 162 104 L 161 112 Q 150 122 139 112 Z" fill="#c2915f" opacity=".45"/>
+            <!-- orecchie -->
+            <ellipse cx="115" cy="66" rx="6" ry="9" fill="url(#skinG)"/>
+            <ellipse cx="185" cy="66" rx="6" ry="9" fill="url(#skinG)"/>
+            <!-- volto -->
+            <path d="M 116 58 C 116 26 131 14 150 14 C 169 14 184 26 184 58 C 184 82 170 104 150 104 C 130 104 116 82 116 58 Z" fill="url(#skinG)"/>
+            <!-- capelli pettinati all'indietro -->
+            <path d="M 114 56 C 111 22 130 8 150 8 C 171 8 189 22 186 56 C 181 38 172 28 160 26 C 162 20 155 16 149 18 C 134 21 119 36 114 56 Z" fill="url(#hairG)"/>
+            <path d="M 114 56 C 112 46 114 38 118 32 L 121 60 Z" fill="url(#hairG)"/>
+            <path d="M 186 56 C 188 46 186 38 182 32 L 179 60 Z" fill="url(#hairG)"/>
+            <!-- occhi -->
+            <g class="cr-eye">
+              <ellipse cx="137" cy="60" rx="6.5" ry="4.6" fill="#fbf7ee"/>
+              <circle cx="137.5" cy="60.6" r="3" fill="#5b3a21"/>
+              <circle cx="137.5" cy="60.6" r="1.4" fill="#191310"/>
+              <circle cx="136.4" cy="59.4" r=".8" fill="#fff"/>
+              <path d="M 130.5 58 Q 137 54.5 143.5 58" stroke="#8a6a4a" stroke-width="1.2" fill="none"/>
+            </g>
+            <g class="cr-eye">
+              <ellipse cx="163" cy="60" rx="6.5" ry="4.6" fill="#fbf7ee"/>
+              <circle cx="162.5" cy="60.6" r="3" fill="#5b3a21"/>
+              <circle cx="162.5" cy="60.6" r="1.4" fill="#191310"/>
+              <circle cx="161.4" cy="59.4" r=".8" fill="#fff"/>
+              <path d="M 156.5 58 Q 163 54.5 169.5 58" stroke="#8a6a4a" stroke-width="1.2" fill="none"/>
+            </g>
+            <!-- sopracciglia -->
+            <path d="M 128 50 Q 137 46 145 49.5" stroke="#2e2119" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+            <path d="M 155 49.5 Q 163 46 172 50" stroke="#2e2119" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+            <!-- naso -->
+            <path d="M 150 60 C 152.5 68 154 74 151.5 79 C 149.5 80.5 146.5 80 145 78" stroke="#b98a5e" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+            <ellipse cx="146.5" cy="79" rx="1.2" ry=".8" fill="#a8794e"/>
+            <ellipse cx="154" cy="79" rx="1.2" ry=".8" fill="#a8794e"/>
+            <!-- bocca -->
+            <path d="M 139 89 Q 150 95 161 89 Q 150 99 139 89 Z" fill="#a35c48"/>
+            <path d="M 139 89 Q 150 93 161 89" stroke="#7e4234" stroke-width="1" fill="none"/>
+            <!-- ombreggiatura guance/lato -->
+            <path d="M 168 40 C 180 52 182 74 172 92 C 180 78 182 56 176 42 Z" fill="#b9895c" opacity=".35"/>
+          </svg>
+        </div>
+
+        <!-- Vassoio fiches del banco -->
+        <div class="chip-tray" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="dealer-hand-wrap">
+          <div id="dealerCards" class="cards-row"></div>
+          <div id="dealerValue" class="hand-value" hidden></div>
+        </div>
+        <div id="phaseBanner" class="phase-banner">In attesa di giocatori&#8230;</div>
+      </div>
+
+      <!-- Sabot -->
+      <div id="shoe" class="shoe" title="Sabot &#8212; 6 mazzi">
+        <div class="shoe-cards"></div>
+      </div>
+
+      <!-- Postazioni giocatori (riempite da JS) -->
+      <div id="seats" class="seats"></div>
+    </div>
+  </main>
+
+  <!-- ================= CONTROLLI DEL GIOCATORE ================= -->
+  <footer class="controls">
+    <!-- Fase puntate -->
+    <div id="betControls" class="bet-controls" hidden>
+      <div class="chips-tray">
+        <button class="chip-btn chip-1k"   data-v="1000"><span>1K</span></button>
+        <button class="chip-btn chip-5k"   data-v="5000"><span>5K</span></button>
+        <button class="chip-btn chip-25k"  data-v="25000"><span>25K</span></button>
+        <button class="chip-btn chip-100k" data-v="100000"><span>100K</span></button>
+      </div>
+      <div class="bet-summary">
+        <span>Puntata: <b id="myBetLabel">0</b></span>
+        <button id="clearBet" class="btn-ghost">Annulla</button>
+        <button id="startBtn" class="btn-gold btn-start" hidden>▶ Avvia partita</button>
+        <span id="waitHost" class="wait-host" hidden>In attesa che l'host ★ avvii la mano…</span>
+      </div>
+    </div>
+
+    <!-- Fase di gioco -->
+    <div id="actionControls" class="action-controls" hidden>
+      <div class="turn-timer-wrap"><div id="turnTimerBar"></div></div>
+      <button id="btnHit"    class="btn-action">Carta</button>
+      <button id="btnStand"  class="btn-action btn-stand">Stai</button>
+      <button id="btnDouble" class="btn-action btn-double">Raddoppia</button>
+      <button id="btnSplit"  class="btn-action btn-split">Dividi</button>
+    </div>
+  </footer>
+
+  <!-- ================= PANNELLI DI PERSONALIZZAZIONE ================= -->
+  <div id="tableStylePanel" class="picker-panel" hidden>
+    <div class="picker-head"><span>Stile del tavolo</span><button class="picker-close" data-close="tableStylePanel">✕</button></div>
+    <div id="tableStyleGrid" class="table-styles-grid"></div>
+    <p class="picker-note">Solo l'host può cambiare lo stile: viene applicato per tutti.</p>
+  </div>
+
+  <div id="cardStylePanel" class="picker-panel" hidden>
+    <div class="picker-head"><span>Il dorso delle tue carte</span><button class="picker-close" data-close="cardStylePanel">✕</button></div>
+    <div id="cardStyleGrid" class="backs-grid"></div>
+    <p class="picker-note">La scelta è personale: ogni giocatore vede il proprio stile sulle proprie carte.</p>
+  </div>
+
+  <!-- Notifiche -->
+  <div id="toasts" class="toasts"></div>
+
+  <script src="client.js"></script>
+</body>
+</html>
