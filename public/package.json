@@ -1,0 +1,19 @@
+{
+  "name": "blackjack-royale",
+  "version": "1.1.0",
+  "description": "Blackjack multiplayer online in tempo reale",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1",
+    "ws": "^8.21.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
