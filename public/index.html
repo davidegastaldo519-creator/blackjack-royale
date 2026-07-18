@@ -54,15 +54,73 @@
     <div class="table">
       <div class="table-rail"></div>
       <div class="table-felt">
-        <div class="felt-print">BLACKJACK PAGA 3 A 2 · IL BANCO STA SU 17</div>
+        <!-- Decorazioni stampate sul feltro (archi da casinò) -->
+        <svg class="felt-deco" viewBox="0 0 1000 560" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <path id="arcText" d="M 140 285 Q 500 470 860 285" fill="none"/>
+          </defs>
+          <path d="M 110 260 Q 500 465 890 260" class="deco-line"/>
+          <path d="M 125 335 Q 500 520 875 335" class="deco-line thin"/>
+          <text class="deco-text">
+            <textPath href="#arcText" startOffset="50%" text-anchor="middle">BLACKJACK PAGA 3 A 2 &#183; IL BANCO STA SU 17 &#183; ASSICURAZIONE PAGA 2 A 1</textPath>
+          </text>
+        </svg>
 
         <!-- Dealer -->
         <div class="dealer-zone">
           <div id="dealerAvatar" class="dealer-avatar" data-mood="idle">
-            <div class="d-head"></div>
-            <div class="d-body"><div class="d-tie"></div></div>
-            <div class="d-arm d-arm-l"></div>
-            <div class="d-arm d-arm-r"></div>
+            <svg viewBox="0 0 120 130" aria-hidden="true">
+              <defs>
+                <linearGradient id="dSkin" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#eec9a3"/><stop offset="1" stop-color="#d3a273"/>
+                </linearGradient>
+                <linearGradient id="dTux" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#26262e"/><stop offset="1" stop-color="#0e0e13"/>
+                </linearGradient>
+              </defs>
+              <!-- braccia (animate via CSS) -->
+              <g class="svg-arm svg-arm-l">
+                <rect x="14" y="62" width="13" height="42" rx="6.5" fill="url(#dTux)"/>
+                <circle cx="20.5" cy="106" r="7" fill="url(#dSkin)"/>
+              </g>
+              <g class="svg-arm svg-arm-r">
+                <rect x="93" y="62" width="13" height="42" rx="6.5" fill="url(#dTux)"/>
+                <circle cx="99.5" cy="106" r="7" fill="url(#dSkin)"/>
+                <rect class="held-card" x="92" y="100" width="15" height="21" rx="2" fill="#fdfcf7" stroke="#c9a24b" stroke-width="1"/>
+              </g>
+              <!-- busto: smoking con revers e camicia -->
+              <path d="M 24 128 C 24 84 40 66 60 66 C 80 66 96 84 96 128 Z" fill="url(#dTux)"/>
+              <path d="M 60 70 L 47 128 L 73 128 Z" fill="#f6f2e6"/>
+              <path d="M 60 70 L 40 76 L 50 96 L 60 74 Z" fill="#1a1a21"/>
+              <path d="M 60 70 L 80 76 L 70 96 L 60 74 Z" fill="#1a1a21"/>
+              <circle cx="60" cy="104" r="1.8" fill="#c9a24b"/>
+              <circle cx="60" cy="114" r="1.8" fill="#c9a24b"/>
+              <!-- papillon -->
+              <path d="M 60 72 L 49 66 L 49 78 Z" fill="#8e1f2c"/>
+              <path d="M 60 72 L 71 66 L 71 78 Z" fill="#8e1f2c"/>
+              <circle cx="60" cy="72" r="3" fill="#6d1520"/>
+              <!-- collo e testa -->
+              <rect x="53" y="52" width="14" height="14" rx="5" fill="url(#dSkin)"/>
+              <ellipse cx="60" cy="38" rx="19" ry="21" fill="url(#dSkin)"/>
+              <!-- capelli con riga laterale -->
+              <path d="M 41 36 C 41 20 52 14 60 14 C 72 14 79 21 79 34 C 74 26 68 24 62 25 C 63 21 60 18 57 19 C 50 21 44 27 41 36 Z" fill="#2c2320"/>
+              <!-- orecchie -->
+              <circle cx="41.5" cy="40" r="3.5" fill="url(#dSkin)"/>
+              <circle cx="78.5" cy="40" r="3.5" fill="url(#dSkin)"/>
+              <!-- occhi + sopracciglia -->
+              <ellipse class="d-eye" cx="53" cy="38" rx="2" ry="2.6" fill="#221c18"/>
+              <ellipse class="d-eye" cx="67" cy="38" rx="2" ry="2.6" fill="#221c18"/>
+              <path d="M 49 32.5 Q 53 30.5 57 32.5" stroke="#2c2320" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+              <path d="M 63 32.5 Q 67 30.5 71 32.5" stroke="#2c2320" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+              <!-- naso, baffi, sorriso -->
+              <path d="M 60 40 Q 62 44 60 46" stroke="#c08b5c" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+              <path d="M 52 50 Q 60 47.5 68 50" stroke="#2c2320" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+              <path d="M 54 54 Q 60 57 66 54" stroke="#b5794a" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <!-- Vassoio fiches del banco -->
+          <div class="chip-tray" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
           </div>
           <div class="dealer-hand-wrap">
             <div id="dealerCards" class="cards-row"></div>
