@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blackjack Royale — Tavolo Multiplayer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="t-style-1">
+
+  <!-- ================= SCHERMATA DI INGRESSO ================= -->
+  <div id="joinOverlay" class="overlay">
+    <div class="join-card">
+      <h1 class="brand">Blackjack <span>Royale</span></h1>
+      <p class="join-sub">Tavolo privato · fino a 5 giocatori · fiches virtuali</p>
+      <label class="field-label" for="nameInput">Il tuo nome al tavolo</label>
+      <input id="nameInput" maxlength="16" placeholder="Es. Davide" autocomplete="off">
+      <label class="field-label">Scegli il dorso delle tue carte</label>
+      <div id="joinBacks" class="backs-grid"></div>
+      <button id="joinBtn" class="btn-gold">Siediti al tavolo</button>
+      <p id="joinError" class="join-error"></p>
+    </div>
+  </div>
+
+  <!-- ================= BARRA SUPERIORE ================= -->
+  <header class="topbar">
+    <div class="brand-small">♠ Blackjack <span>Royale</span></div>
+    <div class="room-box">
+      <span class="room-label">Stanza</span>
+      <span id="roomCode" class="room-code">—</span>
+      <button id="copyLink" class="btn-ghost" title="Copia il link della stanza">Copia link invito</button>
+    </div>
+    <div class="top-actions">
+      <button id="openTableStyles" class="btn-ghost host-only" hidden>Stile tavolo</button>
+      <button id="openCardStyles" class="btn-ghost">Le mie carte</button>
+    </div>
+  </header>
+
+  <!-- ================= PANNELLO SALDI (LEDGER) ================= -->
+  <aside class="ledger">
+    <div class="ledger-title">Registro fiches</div>
+    <div id="ledgerRows"></div>
+    <div class="ledger-bonus">
+      <div class="bonus-label">Prossima ricarica <b>+150.000</b></div>
+      <div id="bonusTimer" class="bonus-timer">--:--</div>
+      <div class="bonus-bar"><div id="bonusBarFill"></div></div>
+    </div>
+  </aside>
+
+  <!-- ================= SCENA DEL TAVOLO ================= -->
+  <main class="scene">
+    <div class="table">
+      <div class="table-rail"></div>
+      <div class="table-felt">
+        <div class="felt-print">BLACKJACK PAGA 3 A 2 · IL BANCO STA SU 17</div>
+
+        <!-- Dealer -->
+        <div class="dealer-zone">
+          <div id="dealerAvatar" class="dealer-avatar" data-mood="idle">
+            <div class="d-head"></div>
+            <div class="d-body"><div class="d-tie"></div></div>
+            <div class="d-arm d-arm-l"></div>
+            <div class="d-arm d-arm-r"></div>
+          </div>
+          <div class="dealer-hand-wrap">
+            <div id="dealerCards" class="cards-row"></div>
+            <div id="dealerValue" class="hand-value" hidden></div>
+          </div>
+          <div id="phaseBanner" class="phase-banner">In attesa di giocatori…</div>
+        </div>
+
+        <!-- Sabot -->
+        <div id="shoe" class="shoe" title="Sabot — 6 mazzi">
+          <div class="shoe-cards"></div>
+        </div>
+
+        <!-- Postazioni giocatori (riempite da JS) -->
+        <div id="seats" class="seats"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ================= CONTROLLI DEL GIOCATORE ================= -->
+  <footer class="controls">
+    <!-- Fase puntate -->
+    <div id="betControls" class="bet-controls" hidden>
+      <div class="chips-tray">
+        <button class="chip-btn chip-1k"   data-v="1000"><span>1K</span></button>
+        <button class="chip-btn chip-5k"   data-v="5000"><span>5K</span></button>
+        <button class="chip-btn chip-25k"  data-v="25000"><span>25K</span></button>
+        <button class="chip-btn chip-100k" data-v="100000"><span>100K</span></button>
+      </div>
+      <div class="bet-summary">
+        <span>Puntata: <b id="myBetLabel">0</b></span>
+        <button id="clearBet" class="btn-ghost">Annulla</button>
+        <button id="startBtn" class="btn-gold btn-start" hidden>▶ Avvia partita</button>
+        <span id="waitHost" class="wait-host" hidden>In attesa che l'host ★ avvii la mano…</span>
+      </div>
+    </div>
+
+    <!-- Fase di gioco -->
+    <div id="actionControls" class="action-controls" hidden>
+      <div class="turn-timer-wrap"><div id="turnTimerBar"></div></div>
+      <button id="btnHit"    class="btn-action">Carta</button>
+      <button id="btnStand"  class="btn-action btn-stand">Stai</button>
+      <button id="btnDouble" class="btn-action btn-double">Raddoppia</button>
+      <button id="btnSplit"  class="btn-action btn-split">Dividi</button>
+    </div>
+  </footer>
+
+  <!-- ================= PANNELLI DI PERSONALIZZAZIONE ================= -->
+  <div id="tableStylePanel" class="picker-panel" hidden>
+    <div class="picker-head"><span>Stile del tavolo</span><button class="picker-close" data-close="tableStylePanel">✕</button></div>
+    <div id="tableStyleGrid" class="table-styles-grid"></div>
+    <p class="picker-note">Solo l'host può cambiare lo stile: viene applicato per tutti.</p>
+  </div>
+
+  <div id="cardStylePanel" class="picker-panel" hidden>
+    <div class="picker-head"><span>Il dorso delle tue carte</span><button class="picker-close" data-close="cardStylePanel">✕</button></div>
+    <div id="cardStyleGrid" class="backs-grid"></div>
+    <p class="picker-note">La scelta è personale: ogni giocatore vede il proprio stile sulle proprie carte.</p>
+  </div>
+
+  <!-- Notifiche -->
+  <div id="toasts" class="toasts"></div>
+
+  <script src="client.js"></script>
+</body>
+</html>
