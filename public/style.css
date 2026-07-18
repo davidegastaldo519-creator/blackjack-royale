@@ -20,6 +20,7 @@
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
+[hidden] { display: none !important; } /* fix: "hidden" deve sempre vincere su display:flex/grid */
 html, body { height: 100%; }
 body {
   font-family: 'Inter', system-ui, sans-serif;
